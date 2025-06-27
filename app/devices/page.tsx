@@ -195,9 +195,9 @@ export default function Devices() {
                                     }}>
                                         {generatedPin}
                                     </div>
-                                    <div style={{ color: "#888", fontSize: "1rem" }}>
+                                    {/* <div style={{ color: "#888", fontSize: "1rem" }}>
                                         นำ PIN นี้ไปเพิ่มอุปกรณ์ในแอปหรืออุปกรณ์จริง
-                                    </div>
+                                    </div> */}
                                 </div>
                             ) : (
                                 <button
