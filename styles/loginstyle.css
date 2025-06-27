@@ -1,0 +1,540 @@
+/* ตำแหน่งและขนาดของหน้า */
+.login-page {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #39394f 0%, #1f1f2e 100%);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family: 'sriracha', cursive;
+    font-size: 20px;
+}/*รูปพื้นหลัง*/
+.background-image {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    z-index: -1; 
+    opacity: 0.5; 
+    bottom: 0;
+    right: 0;
+    transform: translate(30%,30%);
+}
+/* คอนเทนเนอร์หลัก */
+.login-container {
+    display: grid;
+    grid-template-columns: 4fr 5fr;
+    background: #ffffff;
+    width: 800px;
+    height: 600px;
+    overflow: hidden;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ส่วนโลโก้ */
+.section-logo {
+    background: linear-gradient(45deg, #26eb72 0%, #1db45a 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.section-logo img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.h1-name {
+    font-size: 50px;
+    color: #ffffff;
+    font-family: 'Bungee', sans-serif;
+    margin: 0;
+}
+
+/* ส่วนฟอร์ม */
+.section-form {
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+    background: #ffffff;
+    padding: 20px;
+    position: relative;
+    top: 0;
+}
+
+.login-bg {
+    width: 100%;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-bg.transitioning {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+}
+
+.login-bg.transitioning .button-all,
+.login-bg.transitioning .social-login,
+.login-bg.transitioning .register-section,
+.login-bg.transitioning .forgot-password {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.form-content {
+    transition: all 0.4s ease-in-out;
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.login-bg.transitioning .form-content {
+    opacity: 0;
+    transform: translateX(-30px);
+}
+
+
+.h2-login {
+    font-size: 40px;
+    color: #333333;
+    font-family: 'Sriracha', cursive;
+    margin-bottom: 0px;
+    text-align: center;
+    margin-top:60px;
+    margin-bottom: 0px;
+}
+.h2-register {
+    font-size: 40px;
+    color: #333333;
+    font-family: 'Sriracha', cursive;
+    margin-bottom: 0px;
+    text-align: center;
+    margin-top:0px;
+    margin-bottom: 0px;
+}
+
+/* ช่องกรอกข้อมูล */
+.input-field {
+    position: relative;
+    margin-bottom: 20px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+.login-bg.transitioning .input-field {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.input-field:nth-child(1) { transition-delay: 0.1s; }
+.input-field:nth-child(2) { transition-delay: 0.2s; }
+.input-field:nth-child(3) { transition-delay: 0.3s; }
+.input-field:nth-child(4) { transition-delay: 0.4s; }
+
+.input-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #555555;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s ease;
+}
+
+.input-field input:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* ลืมรหัสผ่าน */
+.forgot-password {
+    text-align: right;
+    margin-top: 5px;
+}
+
+.forgot-password-link {
+    background: none;
+    border: none;
+    color: #007BFF;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.forgot-password-link:hover {
+    color: #0056b3;
+}
+
+/* ปุ่ม */
+.button-all {
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+    
+}
+
+.login-button,
+.register-button {
+    background: #26c42e;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.login-button:hover{
+    background: #0d7e0f;
+    transform: scale(1.05); /* เพิ่มเอฟเฟกต์ขยาย */
+}
+
+/* ปุ่ม Social Login */
+.social-login {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.google-login {
+    display: flex;
+    align-items: center;
+    background-color: #fafafa; 
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 10px;
+    /* font-size: 16px; */
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    /* filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2)); เพิ่มเงา */
+}
+
+.google-login:hover {
+    background-color: #eabcb6;
+    transform: scale(1); /* เพิ่มเอฟเฟกต์ขยาย */
+}
+.google-logo {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    /* gap: 10px; */
+}
+
+.facebook-login {
+    display: flex;
+    align-items: center;
+    /*   สีฟ้าของ Facebook */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 10px;
+    /* font-size: 16px; */
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2)); /* เพิ่มเงา */
+}
+
+.facebook-login:hover {
+    background-color: #eabcb6;
+    transform: scale(1); /* เพิ่มเอฟเฟกต์ขยาย */
+}
+.facebook-logo{
+    width: 25px;
+    height: 25px;
+    margin-right: 2px;
+}
+
+/* ปุ่ม Register */
+.register-section {
+    margin-top: 15px;
+    text-align: center;
+    color: #333;
+    border-radius: 5px;
+    /* padding: 10px 20px; */
+    font-size: 16px;
+}
+
+.register-button {
+    background: none;
+    color: #2ac967;
+    border: none;
+    border-radius: 5px;
+    padding: 0px 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: underline;
+}
+.home-login{
+    align-content: center;
+}
+.reset-password {
+    background: none;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #26c42e;
+
+}
+.reset-password:hover {
+    color: #ffffff;
+    background-color: #0d7e0f;
+    transform: translateY(-2px);
+    transform: scale(1);
+
+
+}
+.register-button-regis {
+    background: none;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #26c42e;
+
+}
+.register-button-regis:hover {
+        background: #0d7e0f;
+        transform: scale(1.05);  /* เพิ่มเอฟเฟกต์ขยาย */
+}
+
+.register-button:hover {
+    color: #1db45a;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+
+@media (max-width: 768px) {
+    .login-page {
+        padding: 20px;
+        font-size: 16px;
+    }
+
+    .login-container {
+        grid-template-columns: 1fr;
+        width: 95%;
+        max-width: 500px;
+        height: auto;
+        min-height: 500px;
+        margin: 20px;
+        padding: 15px;
+    }
+
+    .section-form {
+        padding: 15px;
+        width: 100%;
+        height: 100%;
+        align-content: center;
+        /* position: relative;
+        top: 0; */
+    }
+
+    .login-bg {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-field {
+        margin-bottom: 12px;
+        width: 100%;
+    }
+
+    .input-field input {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .social-login {
+        margin-top: 15px;
+        gap: 20px;
+    }
+
+    .button-all {
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    .button-all button {
+        width: 100%;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        width: 95%;
+        margin: 10px;
+        padding: 10px;
+        min-height: 450px;
+    }
+
+    .section-form {
+        padding: 10px;
+    }
+
+    .input-field {
+        margin-bottom: 10px;
+    }
+
+    .input-field input {
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    .social-login {
+        margin-top: 12px;
+        gap: 15px;
+    }
+
+    .button-all {
+        margin-top: 12px;
+    }
+
+    .button-all button {
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    .register-section {
+        margin-top: 12px;
+        font-size: 14px;
+    }
+}
+
+.password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input input {
+    width: 100%;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555555;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle:hover {
+    color: #333333;
+}
+.message {
+    color: #26eb72;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .login-container {
+        width: 90%;
+        padding: 20px;
+        margin: 20px;
+    }
+
+    .section-logo {
+        padding: 20px;
+    }
+
+    .section-logo img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .h1-name {
+        font-size: 28px;
+    }
+
+    .h2-login {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        width: 95%;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .section-logo {
+        padding: 15px;
+    }
+
+    .section-logo img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .h1-name {
+        font-size: 24px;
+    }
+
+    .h2-login {
+        font-size: 20px;
+    }
+.back-to-login {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #666;
+    margin-bottom: 20px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+.back-to-login:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #333;
+    transform: translateX(-3px);
+}
+}

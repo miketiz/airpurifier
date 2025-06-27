@@ -1,0 +1,160 @@
+:root {
+  /* โทนสีสว่าง */
+  --background: #f8f9fa;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --card-background: #ffffff;
+  --border-color: #a1e392;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --sidebar-background: #c6edd0;
+  --sidebar-hover: rgba(38, 196, 46, 0.1);
+  --input-background: #ffffff;
+  --input-border: #dee2e6;
+  --button-background: #e9ecef;
+  --button-hover: #dee2e6;
+  --font-kanit: 'Kanit', sans-serif;
+  --primary: #26c42e;
+  --accent: #e91e63;
+  --gradient: linear-gradient(90deg, #26c42e 0%, #1db45a 100%);
+  --gradient-accent: linear-gradient(90deg, #e91e63 0%, #ff9800 100%);
+}
+
+.dark {
+  /* โทนสีเทาที่นุ่มนวล */
+  --background: #2f3437;
+  --text-primary: #e9ecef;
+  --text-secondary: #adb5bd;
+  --card-background: #383c3f;
+  --border-color: #454b4e;
+  --shadow-color: rgba(0, 0, 0, 0.15);
+  --sidebar-background: #383c3f;
+  --sidebar-hover: rgba(38, 196, 46, 0.15);
+  --input-background: #454b4e;
+  --input-border: #565e64;
+  --button-background: #454b4e;
+  --button-hover: #565e64;
+}
+
+/* การเปลี่ยนแปลงแบบ Smooth */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-kanit), 'Kanit', sans-serif !important;
+  letter-spacing: 0.01em;
+}
+
+/* การ์ดต่างๆ */
+/* .card, 
+.settings-card, 
+.profile-card,
+.device-status-card,
+.air-quality-card,
+.performance-card,
+.wifi-settings-card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px var(--shadow-color);
+} */
+
+/* .card:hover, .profile-card:hover, .settings-card:hover {
+  box-shadow: 0 8px 32px rgba(233,30,99,0.12), 0 2px 8px rgba(44,62,80,0.06);
+  transform: translateY(-2px) scale(1.01);
+  transition: box-shadow 0.2s, transform 0.2s;
+} */
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--sidebar-background);
+  border-right: 1px solid var(--border-color);
+}
+
+.nav-item {
+  color: var(--text-secondary);
+}
+
+.nav-item:hover {
+  background-color: var(--sidebar-hover);
+}
+
+/* ข้อความต่างๆ */
+h1, h2, h3, 
+.settings-title, 
+.profile-title, 
+.device-title {
+  color: var(--text-primary);
+}
+
+/* ฟอร์มต่างๆ */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  background-color: var(--input-background);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+/* ปุ่มกด */
+button {
+  all: unset;
+  /* background-color: var(--button-background);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color); */
+}
+
+button:hover {
+  background-color: var(--button-hover);
+}
+
+/* ข้อความสถานะและรายละเอียด */
+.settings-item label, 
+.info-detail label,
+.device-status,
+.current-mode,
+.wifi-status {
+  color: var(--text-secondary);
+}
+body{
+    margin: 0;
+    padding: 0;
+}
+
+.main-content {
+    flex: 1;
+    padding: 25px;
+    margin-left: 250px;
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.sidebar-collapsed {
+    margin-left: 80px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .main-content.sidebar-collapsed {
+        margin-left: 0;
+    }
+}
+
+@layer utilities {
+    .font-sriracha {
+        font-family: var(--font-sriracha);
+    }
+    
+    .font-ibm {
+        font-family: var(--font-ibm-plex-sans-thai);
+    }
+}

@@ -1,0 +1,210 @@
+.mobile-menu-button {
+    display: none; /* ซ่อนปุ่มเมนูบนหน้าจอปกติ */
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 1001;
+    background: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-button:hover {
+    background: rgba(38, 196, 46, 0.1);
+    transform: scale(1.05);
+}
+
+.sidebar {
+    width: 250px;
+    background: var(--sidebar-background);
+    border-right: none;
+    box-shadow: 2px 0 16px var(--shadow-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    align-items: center;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+    padding: 20px 10px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* ชิดซ้าย */
+    gap: 15px;
+    padding: 15px 0 15px 20px; /* เพิ่ม padding ซ้าย */
+    margin-bottom: 20px;
+    width: 100%;
+    /* border-bottom: 2px solid rgba(38, 196, 46, 0.1); */
+    /* box-shadow: 0 0 0 1px rgba(38, 196, 46, 0.1); */
+    transition: all 0.3s ease;
+}
+
+.logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(45deg, #26c42e, #1db45a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.nav-menu {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* ชิดซ้าย */
+    gap: 15px;
+    padding: 12px 20px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item:hover {
+    background: rgba(38, 196, 46, 0.1);
+    color: #26c42e;
+    transform: translateX(5px);
+}
+
+.nav-item.active {
+    background: linear-gradient(45deg, #26c42e, #1db45a);
+    color: white;
+    box-shadow: 0 4px 12px rgba(38, 196, 46, 0.2);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: #26c42e;
+    border-radius: 0 2px 2px 0;
+}
+
+.nav-item span {
+    font-size: 15px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.nav-item svg {
+    min-width: 24px;
+    display: block;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 12px;
+    gap: 0;
+}
+
+.logo-text,
+.nav-item span {
+    opacity: 1;
+    max-width: 200px;
+    transition: opacity 0.3s, max-width 0.3s;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .nav-item span {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-button {
+    display: none;
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 1001;
+    background: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mobile-menu-button {
+        display: block;
+    }
+
+    .sidebar {
+        transform: translateX(0);
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        z-index: 1000;
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+}
+
+
+/* Dark Mode Styles */
+.sidebar.dark {
+    background: var(--sidebar-background);
+    border-right: 1px solid var(--border-color);
+}
+
+.dark .logo-text {
+    color: var(--text-primary);
+}
+
+.dark .nav-item {
+    color: var(--text-secondary);
+}
+
+.dark .nav-item:hover {
+    background: var(--sidebar-hover);
+    color: #26c42e;
+}
+
+.dark .mobile-menu-button {
+    background: var(--card-background);
+    color: var(--text-primary);
+}
+
+.dark .mobile-menu-button:hover {
+    background: var(--sidebar-hover);
+}

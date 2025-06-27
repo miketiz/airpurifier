@@ -1,0 +1,102 @@
+:root {
+  /* ตัวแปรสีพื้นฐาน */
+  --primary-color: #26c42e;
+  --primary-hover: #1ea825;
+  --secondary-color: #2c3e50;
+  
+  /* ตัวแปรสำหรับ Light Mode */
+  --background: #f8f9fa;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --card-background: #ffffff;
+  --border-color: #e9ecef;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --sidebar-background: #ffffff;
+  --sidebar-hover: rgba(38, 196, 46, 0.1);
+  --input-background: #ffffff;
+  --input-border: #dee2e6;
+  --button-background: #e9ecef;
+  --button-hover: #dee2e6;
+  --chart-grid-color: rgba(0, 0, 0, 0.05);
+  --chart-text-color: #2c3e50;
+}
+
+.dark {
+  /* ตัวแปรสำหรับ Dark Mode */
+  --background: #2f3437;
+  --text-primary: #e9ecef;
+  --text-secondary: #adb5bd;
+  --card-background: #383c3f;
+  --border-color: #454b4e;
+  --shadow-color: rgba(0, 0, 0, 0.15);
+  --sidebar-background: #383c3f;
+  --sidebar-hover: rgba(38, 196, 46, 0.15);
+  --input-background: #454b4e;
+  --input-border: #565e64;
+  --button-background: #454b4e;
+  --button-hover: #565e64;
+  --chart-grid-color: rgba(255, 255, 255, 0.05);
+  --chart-text-color: #e9ecef;
+}
+
+/* การเปลี่ยนแปลงแบบ Smooth */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ปรับแต่งการ์ดทั่วไป */
+.card {
+  background-color: var(--card-background);
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 4px 20px var(--shadow-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+/* ปรับแต่งปุ่ม */
+.button {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* ปรับแต่ง Input fields */
+.input {
+  padding: 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(38, 196, 46, 0.1);
+}
