@@ -4,7 +4,6 @@ import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
 
-import personIcon from "@/public/img/profile/profile-user.png";
 
 const API_BASE = process.env.PRIVATE_API_AUTH || "http://172.25.11.111:8000/auth";
 
@@ -38,8 +37,14 @@ export const authOptions: NextAuthOptions = {
                     } else {
                         throw new Error(data.message || "เข้าสู่ระบบล้มเหลว");
                     }
-                } catch (err: any) {
-                    console.error("Login error:", err.response?.data || err.message);
+                } catch (err: unknown) {
+                    if (axios.isAxiosError(err)) {
+                        console.error("Login error:", err.response?.data || err.message);
+                    } else if (err instanceof Error) {
+                        console.error("Login error:", err.message);
+                    } else {
+                        console.error("Login error:", err);
+                    }
                     throw new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
                 }
             }
@@ -92,7 +97,7 @@ export const authOptions: NextAuthOptions = {
                     user.provider = apiUser.provider;
                     return true;
                 }
-                
+
                 return false;
             } catch (err) {
                 console.error("OAuth error:", err);

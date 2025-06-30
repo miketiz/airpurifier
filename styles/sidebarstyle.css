@@ -20,7 +20,7 @@
 
 .sidebar {
     width: 250px;
-    background: var(--sidebar-background);
+    background: #ffffff;
     border-right: none;
     box-shadow: 2px 0 16px var(--shadow-color);
     padding: 20px;

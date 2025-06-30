@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
         // ส่ง pin_key กลับไปที่ client
         return NextResponse.json({ success: true, pin_key: data.pin_key });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ success: false, message: "API error" }, { status: 500 });
     }
 }

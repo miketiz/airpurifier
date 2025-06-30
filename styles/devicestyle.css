@@ -5,6 +5,16 @@
 }
 
 .device-title {
+  color: var(--text-primary);
+}
+
+.device-status-card {
+  background: var(--card-background);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+.device-title {
     color: #2c3e50;
     font-size: 28px;
     margin-bottom: 30px;
@@ -12,12 +22,12 @@
 
 /* ส่วนหลักสำหรับการ์ดสถานะและพัดลม */
 .device-status-card {
-    background: linear-gradient(120deg, #e8ffe8 0%, #f8fff8 100%);
+    /* background: linear-gradient(120deg, #e8ffe8 0%, #f8fff8 100%); */
     border-radius: 20px;
     padding: 32px 28px;
     margin-bottom: 32px;
     box-shadow: 0 8px 32px #26c42e1a, 0 1.5px 6px #2c3e500a;
-    border: 1.5px solid #e0ffe0;
+    border: 1.5px solid #ffffff;
     transition: box-shadow 0.2s, background 0.3s;
 }
 
@@ -132,8 +142,8 @@
 }
 
 .control-btn.active {
-    background: #26c42e;
-    color: white;
+  background: var(--primary);
+  color: #fff;
 }
 
 .control-btn:disabled {
@@ -239,7 +249,7 @@
     }
 }
 .air-quality-card {
-    background: white;
+    background: rgb(255, 255, 255);
     border-radius: 15px;
     padding: 20px;
     text-align: center;

@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import { Fan, Power, Moon, Gauge, Thermometer, Droplets, Clock, PlusCircle } from "lucide-react";
 import "@/styles/devicestyle.css";
 import { span } from "framer-motion/client";
+import axios from "axios";
 
 export default function Devices() {
     const [power, setPower] = useState(false);
@@ -33,6 +34,11 @@ export default function Devices() {
     const { data: session } = useSession();
     const [generatedPin, setGeneratedPin] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [deviceList, setDeviceList] = useState<any[]>([]);
+    const [selectedDevice, setSelectedDevice] = useState<any>(null);
+    const [editName, setEditName] = useState("");
+    const [editLocation, setEditLocation] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
 
     const calculateAQI = (pm25Value: number) => {
         if (pm25Value <= 12.0) return Math.round((50 - 0) / (12.0 - 0) * (pm25Value - 0) + 0);
@@ -152,6 +158,51 @@ export default function Devices() {
         setIsGenerating(false);
     };
 
+    // เพิ่ม useEffect นี้
+    useEffect(() => {
+        if (!session?.user?.id) return;
+        axios.get(`/api/devices?user_id=${session.user.id}`)
+            .then(res => {
+                const data = res.data;
+                let devices = [];
+                if (Array.isArray(data.device)) {
+                    devices = data.device;
+                } else if (data.device) {
+                    devices = [data.device];
+                }
+                if (data.success && devices.length > 0) {
+                    setHasDevice(true);
+                    setDeviceList(devices);
+                    setSelectedDevice(devices[0]);
+                } else {
+                    setHasDevice(false);
+                    setDeviceList([]);
+                    setSelectedDevice(null);
+                }
+            })
+            .catch(() => {
+                setHasDevice(false);
+                setDeviceList([]);
+                setSelectedDevice(null);
+            });
+    }, [session?.user?.id, generatedPin]);
+
+    const handleUpdateDevice = async () => {
+        if (!selectedDevice) return;
+        try {
+            await axios.post("/api/devices", {
+                user_id: session?.user?.id,
+                connection_key: selectedDevice.connection_key,
+                device_name: editName || undefined,
+                location: editLocation || undefined
+            });
+            // ...อัปเดต state ตามเดิม...
+            setIsEditing(false);
+        } catch (err) {
+            alert("เปลี่ยนชื่อ/ที่ตั้งไม่สำเร็จ");
+        }
+    };
+
     return (
         <div className="dashboard-container">
             <Sidebar />
@@ -227,6 +278,44 @@ export default function Devices() {
                     ) : (
                         <>
                         <h1 className="device-title">ควบคุมเครื่องฟอกอากาศ</h1>
+                        {/* Dropdown หลัก */}
+<select
+    name="select-device"
+    id="select-device"
+    value={selectedDevice?.device_id || ""}
+    onChange={e => {
+        const found = deviceList.find(d => d.device_id === Number(e.target.value));
+        setSelectedDevice(found);
+    }}
+>
+    {deviceList.map(device => (
+        <option key={`main-${device.device_id}`} value={device.device_id}>
+  {device.device_name && device.device_name !== "null" && device.device_name !== null && device.device_name !== undefined
+    ? `เครื่อง ${device.device_id} (${device.device_name})`
+    : `เครื่อง ${device.device_id}`}
+</option>
+    ))}
+</select>
+
+{/* Dropdown สำหรับ hasDevice && deviceList.length > 1 */}
+{hasDevice && deviceList.length > 1 && (
+    <div style={{ marginBottom: 24 }}>
+        <label>เลือกเครื่อง: </label>
+        <select
+            value={selectedDevice?.device_id || ""}
+            onChange={e => {
+                const found = deviceList.find(d => d.device_id === Number(e.target.value));
+                setSelectedDevice(found);
+            }}
+        >
+            {deviceList.map(device => (
+                <option key={`multi-${device.device_id}`} value={device.device_id}>
+                    เครื่อง {device.device_id} ({device.connection_key})
+                </option>
+            ))}
+        </select>
+    </div>
+)}
 
                         <div className="air-quality-grid">
                             <div className="air-quality-card">

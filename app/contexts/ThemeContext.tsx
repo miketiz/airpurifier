@@ -21,8 +21,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
-  // เพิ่มฟังก์ชันเช็คว่าเป็นหน้า login หรือไม่
-  const isLoginPage = () => pathname === '/login';
+  const noThemePages = ["/login", "/forgot-password"];
+  const isNoThemePage = noThemePages.includes(pathname);
 
   // ตรวจสอบ system preference เมื่อ component mount
   useEffect(() => {
@@ -54,8 +54,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (!mounted) return;
     
     try {
-      // ไม่เพิ่ม dark class ถ้าเป็นหน้า login
-      if (!isLoginPage()) {
+      // ไม่เพิ่ม dark class ถ้าเป็นหน้า login หรือ register
+      if (!isNoThemePage) {
         if (darkMode) {
           document.documentElement.classList.add('dark');
           document.documentElement.classList.remove('light');
@@ -64,7 +64,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           document.documentElement.classList.add('light');
         }
       } else {
-        // ถ้าเป็นหน้า login ให้ลบ class ทั้งหมดออก
+        // ถ้าเป็นหน้า login หรือ register ให้ลบ class ทั้งหมดออก
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.remove('light');
       }
