@@ -57,18 +57,11 @@ export default function Dashboard() {
     const [historyLoading, setHistoryLoading] = useState<boolean>(true);
     const { darkMode } = useTheme();
     const [chartType, setChartType] = useState<'line' | 'bar'>('line');
+    const { data: session } = useSession();
 
-
-
-
-
-                                    const { data: session} = useSession()
-                                    useEffect(() => {
-                                        console.log("11111111111111111")
-                                        if ( typeof session !== 'undefined') {
-                                            console.log(session)
-                                        }
-                                    }, [session])
+    // เพิ่ม state สำหรับ device
+    const [deviceList, setDeviceList] = useState<any[]>([]);
+    const [selectedDevice, setSelectedDevice] = useState<any>(null);
 
     // ฟังก์ชันดึงข้อมูลปัจจุบันจาก API
     const fetchDustData = async () => {
@@ -110,6 +103,23 @@ export default function Dashboard() {
             setHistoryLoading(false);
         }
     };
+
+    // โหลด device list
+    useEffect(() => {
+        if (!session?.user?.id) return;
+        fetch(`/api/devices?user_id=${session.user.id}`)
+            .then(res => res.json())
+            .then(data => {
+                let devices = [];
+                if (Array.isArray(data.data)) {
+                    devices = data.data;
+                } else if (data.data) {
+                    devices = [data.data];
+                }
+                setDeviceList(devices);
+                if (devices.length > 0) setSelectedDevice(devices[0]);
+            });
+    }, [session?.user?.id]);
 
     useEffect(() => {
         // ดึงข้อมูลเมื่อโหลดหน้าเว็บ
@@ -220,6 +230,33 @@ export default function Dashboard() {
                         <User size={32} className="user-icon" />
                         <h1 className="font-sriracha">ยินดีต้อนรับ, คุณ {session?.user.name}</h1>
                     </div>
+                </div>
+
+                {/* ปุ่มเลือกเครื่อง (ตกแต่งใหม่) */}
+                <div className="device-select-row" style={{ marginBottom: 24 }}>
+                    <label htmlFor="select-device" className="device-select-label">
+                        เลือกเครื่อง:
+                    </label>
+                    <select
+                        name="select-device"
+                        id="select-device"
+                        className="device-select-custom"
+                        value={selectedDevice?.device_id ? String(selectedDevice.device_id) : ""}
+                        onChange={e => {
+                            const found = deviceList.find(
+                                d => String(d.device_id) === e.target.value
+                            );
+                            setSelectedDevice(found);
+                        }}
+                    >
+                        {deviceList.map((device, idx) => (
+                            <option key={`main-${device.device_id}`} value={String(device.device_id)}>
+                                {device.device_name
+                                    ? `เครื่อง ${idx + 1} (${device.device_name})`
+                                    : `เครื่อง ${idx + 1} (ยังไม่มีชื่อเครื่อง)`}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="dashboard-grid">

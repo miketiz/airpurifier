@@ -196,6 +196,66 @@
     width: 100%;
 }
 
+.device-select-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.device-select-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Kanit', sans-serif;
+    margin-right: 8px;
+}
+
+.device-select-custom {
+    padding: 10px 18px;
+    border: 2px solid var(--primary, #26c42e);
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-family: 'Kanit', sans-serif;
+    background: var(--background, #fff);
+    color: var(--text-primary, #222);
+    transition: border 0.2s, background 0.2s, color 0.2s;
+    outline: none;
+    min-width: 220px;
+    box-shadow: 0 2px 8px rgba(38, 196, 46, 0.07);
+}
+
+.device-select-custom:focus {
+    border-color: var(--primary-dark, #1db45a);
+    background: var(--background-secondary, #f8fff8);
+}
+
+.dark .device-select-custom {
+    background: #232d23;
+    color: #e9ecef;
+    border-color: #1db45a;
+}
+
+.dark .device-select-label {
+    color: #e9ecef;
+}
+
+/* เพิ่ม hover effect */
+.device-select-custom:hover {
+    border-color: var(--primary-dark, #1db45a);
+}
+
+/* ปรับ option ให้รองรับ dark mode */
+.device-select-custom option {
+    background: var(--background, #fff);
+    color: var(--text-primary, #222);
+}
+
+.dark .device-select-custom option {
+    background: #232d23;
+    color: #e9ecef;
+}
+
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;

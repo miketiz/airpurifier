@@ -2,10 +2,10 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Sidebar from "../components/Sidebar";
-import { Fan, Power, Moon, Gauge, Thermometer, Droplets, Clock, PlusCircle } from "lucide-react";
+import { Fan, Power, Moon, Gauge, Thermometer, Droplets, Clock, PlusCircle, Settings } from "lucide-react";
 import "@/styles/devicestyle.css";
-import { span } from "framer-motion/client";
 import axios from "axios";
+import { toast, Toaster } from "react-hot-toast";
 
 export default function Devices() {
     const [power, setPower] = useState(false);
@@ -39,6 +39,8 @@ export default function Devices() {
     const [editName, setEditName] = useState("");
     const [editLocation, setEditLocation] = useState("");
     const [isEditing, setIsEditing] = useState(false);
+    const [showPinModal, setShowPinModal] = useState(false);
+    const [showDeviceSetting, setShowDeviceSetting] = useState(false);
 
     const calculateAQI = (pm25Value: number) => {
         if (pm25Value <= 12.0) return Math.round((50 - 0) / (12.0 - 0) * (pm25Value - 0) + 0);
@@ -124,22 +126,7 @@ export default function Devices() {
         setFormError("");
         setHasDevice(true);
     };
-
-    // เพิ่มฟังก์ชันสำหรับสุ่ม PIN 6 หลัก
-    function generatePin() {
-        return Math.floor(100000 + Math.random() * 900000).toString();
-    }
-
-    // สมมติฟังก์ชันนี้สำหรับบันทึก PIN ไปยัง database (คุณต้องแก้ไขให้ตรงกับ backend จริง)
-    async function savePinToDatabase(pin: string) {
-        await fetch('/api/device-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin }),
-        });
-    }
-
-    const handleGeneratePin = async () => {
+    const handleGeneratePin = async (showModal = false) => {
         setIsGenerating(true);
         if (!session?.user?.id) {
             alert("ไม่พบ user id");
@@ -154,23 +141,28 @@ export default function Devices() {
         const data = await res.json();
         if (data && data.pin_key) {
             setGeneratedPin(data.pin_key);
+            if (showModal) setShowPinModal(true); // เปิด modal เฉพาะกรณีที่ต้องการ
         }
         setIsGenerating(false);
     };
 
-    // เพิ่ม useEffect นี้
     useEffect(() => {
-        if (!session?.user?.id) return;
+        if (!session?.user?.id) {
+            console.log("session ยังไม่มี user id", session);
+            return;
+        }
         axios.get(`/api/devices?user_id=${session.user.id}`)
             .then(res => {
                 const data = res.data;
+                console.log("API /api/devices response:", data);
                 let devices = [];
-                if (Array.isArray(data.device)) {
-                    devices = data.device;
-                } else if (data.device) {
-                    devices = [data.device];
+                if (Array.isArray(data.data)) {
+                    devices = data.data;
+                } else if (data.data) {
+                    devices = [data.data];
                 }
-                if (data.success && devices.length > 0) {
+                console.log("devices ที่ได้:", devices);
+                if (devices.length > 0) {
                     setHasDevice(true);
                     setDeviceList(devices);
                     setSelectedDevice(devices[0]);
@@ -180,96 +172,56 @@ export default function Devices() {
                     setSelectedDevice(null);
                 }
             })
-            .catch(() => {
+            .catch((err) => {
                 setHasDevice(false);
                 setDeviceList([]);
                 setSelectedDevice(null);
+                console.log("API error", err);
             });
     }, [session?.user?.id, generatedPin]);
 
     const handleUpdateDevice = async () => {
-        if (!selectedDevice) return;
+        console.log("session", session);
+        if (!selectedDevice || !session?.user?.id) {
+            toast.error("กรุณาเข้าสู่ระบบก่อน");
+            return;
+        }
         try {
-            await axios.post("/api/devices", {
-                user_id: session?.user?.id,
+            const payload = {
                 connection_key: selectedDevice.connection_key,
-                device_name: editName || undefined,
-                location: editLocation || undefined
-            });
-            // ...อัปเดต state ตามเดิม...
+                device_name: editName,
+                location: editLocation
+            };
+            console.log("payload", payload);
+            await axios.patch("/api/devices", payload, { withCredentials: true });
             setIsEditing(false);
+            toast.success("บันทึกข้อมูลสำเร็จ");
         } catch (err) {
-            alert("เปลี่ยนชื่อ/ที่ตั้งไม่สำเร็จ");
+            toast.error("เปลี่ยนชื่อ/ที่ตั้งไม่สำเร็จ");
         }
     };
 
     return (
         <div className="dashboard-container">
+            <Toaster />
             <Sidebar />
             <div className="main-content">
                 <div className="device-container">
                     {!hasDevice ? (
-                        <div style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            height: "60vh",
-                            fontSize: "2rem",
-                            color: "#7f8c8d"
-                        }}>
+                        <div className="add-device-empty">
                             <span style={{ marginBottom: 24 }}>ยังไม่มีเครื่อง</span>
                             {generatedPin ? (
-                                <div style={{
-                                    background: "#fff",
-                                    borderRadius: 18,
-                                    boxShadow: "0 4px 24px #26c42e22",
-                                    padding: 28,
-                                    marginBottom: 24,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    gap: 16,
-                                    fontSize: "1.5rem"
-                                }}>
-                                    <div style={{ color: "#26c42e", fontWeight: 700, fontSize: "1.8rem" }}>
-                                        PIN 6 หลัก ของคุณคือ
-                                    </div>
-                                    <div style={{
-                                        fontSize: "2.5rem",
-                                        letterSpacing: "10px",
-                                        color: "#2c3e50",
-                                        background: "#e8ffe8",
-                                        borderRadius: 12,
-                                        padding: "12px 32px",
-                                        margin: "12px 0"
-                                    }}>
-                                        {generatedPin}
-                                    </div>
-                                    <div style={{ color: "#888", fontSize: "1rem" }}>
-                                        นำ PIN นี้ไปเพิ่มอุปกรณ์ในแอปหรืออุปกรณ์จริง
-                                    </div>
+                                <div className="pin-card">
+                                    <div className="pin-title">PIN 6 หลัก ของคุณคือ</div>
+                                    <div className="pin-value">{generatedPin}</div>
+                                    <div className="pin-desc">นำ PIN นี้ไปเพิ่มอุปกรณ์ในแอปหรืออุปกรณ์จริง</div>
                                 </div>
                             ) : (
                                 <button
                                     type="button"
-                                    onClick={handleGeneratePin}
+                                    onClick={() => handleGeneratePin(false)}
                                     disabled={isGenerating}
-                                    style={{
-                                        background: "linear-gradient(90deg, #26c42e 0%, #1db45a 100%)",
-                                        color: "#fff",
-                                        border: "none",
-                                        borderRadius: 24,
-                                        padding: "16px 36px",
-                                        fontSize: "1.2rem",
-                                        fontWeight: 700,
-                                        cursor: "pointer",
-                                        boxShadow: "0 4px 15px rgba(38,196,46,0.15)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 10,
-                                        marginTop: 10
-                                    }}
+                                    className="add-device-btn"
                                 >
                                     <PlusCircle size={24} /> {isGenerating ? "กำลังสร้าง..." : "เพิ่มเครื่อง"}
                                 </button>
@@ -277,169 +229,235 @@ export default function Devices() {
                         </div>
                     ) : (
                         <>
-                        <h1 className="device-title">ควบคุมเครื่องฟอกอากาศ</h1>
-                        {/* Dropdown หลัก */}
-<select
-    name="select-device"
-    id="select-device"
-    value={selectedDevice?.device_id || ""}
-    onChange={e => {
-        const found = deviceList.find(d => d.device_id === Number(e.target.value));
-        setSelectedDevice(found);
-    }}
->
-    {deviceList.map(device => (
-        <option key={`main-${device.device_id}`} value={device.device_id}>
-  {device.device_name && device.device_name !== "null" && device.device_name !== null && device.device_name !== undefined
-    ? `เครื่อง ${device.device_id} (${device.device_name})`
-    : `เครื่อง ${device.device_id}`}
-</option>
-    ))}
-</select>
-
-{/* Dropdown สำหรับ hasDevice && deviceList.length > 1 */}
-{hasDevice && deviceList.length > 1 && (
-    <div style={{ marginBottom: 24 }}>
-        <label>เลือกเครื่อง: </label>
-        <select
-            value={selectedDevice?.device_id || ""}
-            onChange={e => {
-                const found = deviceList.find(d => d.device_id === Number(e.target.value));
-                setSelectedDevice(found);
-            }}
-        >
-            {deviceList.map(device => (
-                <option key={`multi-${device.device_id}`} value={device.device_id}>
-                    เครื่อง {device.device_id} ({device.connection_key})
-                </option>
-            ))}
-        </select>
-    </div>
-)}
-
-                        <div className="air-quality-grid">
-                            <div className="air-quality-card">
-                                <h3>PM 2.5</h3>
-                                <div className="value">{loading ? "กำลังโหลด..." : pm25}</div>
-                                <div className="unit">µg/m³</div>
+                            <h1 className="device-title">ควบคุมเครื่องฟอกอากาศ</h1>
+                            {/* Dropdown หลัก */}
+                            <div className="device-select-row">
+                                <select
+                                    name="select-device"
+                                    id="select-device"
+                                    className="device-select"
+                                    value={selectedDevice?.device_id ? String(selectedDevice.device_id) : ""}
+                                    onChange={e => {
+                                        const found = deviceList.find(
+                                            d => String(d.device_id) === e.target.value
+                                        );
+                                        setSelectedDevice(found);
+                                    }}
+                                >
+                                    {deviceList.map((device, idx) => (
+                                        <option key={`main-${device.device_id}`} value={String(device.device_id)}>
+                                            {device.device_name
+                                                ? `เครื่อง ${idx + 1} (${device.device_name})`
+                                                : `เครื่อง ${idx + 1} (ยังไม่มีชื่อเครื่อง)`}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={() => handleGeneratePin(true)}
+                                    disabled={isGenerating}
+                                    className="select-device-btn"
+                                    type="button"
+                                >
+                                    <PlusCircle size={20} />
+                                    {isGenerating ? "กำลังสร้าง..." : "เพิ่มเครื่อง"}
+                                </button>
+                                {/* ปุ่มตั้งค่าเครื่อง */}
+                                <button
+                                    className="device-setting-btn"
+                                    type="button"
+                                    style={{ marginLeft: 8, display: "flex", alignItems: "center", gap: 4 }}
+                                    onClick={() => setShowDeviceSetting(true)}
+                                    disabled={!selectedDevice}
+                                >
+                                    <Settings size={20} />
+                                    ตั้งค่าเครื่อง
+                                </button>
                             </div>
-                            <div className="air-quality-card">
-                                <h3>AQI</h3>
-                                <div className="value">{loading ? "กำลังโหลด..." : aqi}</div>
-                                <div className="status">คุณภาพอากาศ{airQualityStatus}</div>
-                            </div>
-                            <div className="air-quality-card temp-humid-card">
-                                <h3>สภาพแวดล้อม</h3>
-                                <div className="temp-humid-container">
-                                    <div className="temp-section">
-                                        <Thermometer size={30} />
-                                        <div className="value">{loading ? "..." : temperature}</div>
-                                        <div className="unit">°C</div>
+                            <div className="air-quality-grid">
+                                <div className="air-quality-card">
+                                    <h3>PM 2.5</h3>
+                                    <div className="value">{loading ? "กำลังโหลด..." : pm25}</div>
+                                    <div className="unit">µg/m³</div>
+                                </div>
+                                <div className="air-quality-card">
+                                    <h3>AQI</h3>
+                                    <div className="value">{loading ? "กำลังโหลด..." : aqi}</div>
+                                    <div className="status">คุณภาพอากาศ{airQualityStatus}</div>
+                                </div>
+                                <div className="air-quality-card temp-humid-card">
+                                    <h3>สภาพแวดล้อม</h3>
+                                    <div className="temp-humid-container">
+                                        <div className="temp-section">
+                                            <Thermometer size={30} />
+                                            <div className="value">{loading ? "..." : temperature}</div>
+                                            <div className="unit">°C</div>
+                                        </div>
+                                        <div className="humid-section">
+                                            <Droplets size={30} />
+                                            <div className="value">{loading ? "..." : humidity}</div>
+                                            <div className="unit">%</div>
+                                        </div>
                                     </div>
-                                    <div className="humid-section">
-                                        <Droplets size={30} />
-                                        <div className="value">{loading ? "..." : humidity}</div>
-                                        <div className="unit">%</div>
+                                </div>
+                            </div>
+
+                            <div className="device-status-card">
+                                <div className="status-header">
+                                    <Fan
+                                        className={`device-icon${power && mode !== 'off' ? ' spinning' : ''}`}
+                                        size={48}
+                                    />
+                                    <h2>สถานะการทำงาน</h2>
+                                </div>
+                                <div className="status-content">
+                                    <div style={{ display: "flex", justifyContent: "center" }}>
+                                        <p
+                                            className={
+                                                `current-mode-highlight${mode === 'off' ? ' mode-off' : ''}`
+                                            }
+                                        >
+                                            โหมดปัจจุบัน: {
+                                                mode === 'high' ? 'แรง' :
+                                                    mode === 'medium' ? 'ปานกลาง' :
+                                                        mode === 'low' ? 'เบา' :
+                                                            mode === 'auto' ? 'อัตโนมัติ' :
+                                                                mode === 'sleep' ? 'กลางคืน' : 'ปิด'
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="device-controls">
+                                <button className={`control-btn power-btn ${power ? 'active' : ''}`} onClick={handlePowerToggle}>
+                                    <Power size={24} /><span>{power ? 'ปิด' : 'เปิด'}</span>
+                                </button>
+                                <button className={`control-btn ${mode === 'high' ? 'active' : ''}`} onClick={() => handleModeChange('high')} disabled={!power}>
+                                    <Gauge size={24} /><span>แรง</span>
+                                </button>
+                                <button className={`control-btn ${mode === 'medium' ? 'active' : ''}`} onClick={() => handleModeChange('medium')} disabled={!power}>
+                                    <Gauge size={24} /><span>ปานกลาง</span>
+                                </button>
+                                <button className={`control-btn ${mode === 'low' ? 'active' : ''}`} onClick={() => handleModeChange('low')} disabled={!power}>
+                                    <Gauge size={24} /><span>เบา</span>
+                                </button>
+                                <button className={`control-btn ${mode === 'auto' ? 'active' : ''}`} onClick={() => handleModeChange('auto')} disabled={!power}>
+                                    <Fan size={24} /><span>อัตโนมัติ</span>
+                                </button>
+                                <button className={`control-btn ${mode === 'sleep' ? 'active' : ''}`} onClick={() => handleModeChange('sleep')} disabled={!power}>
+                                    <Moon size={24} /><span>กลางคืน</span>
+                                </button>
+                            </div>
+
+                            {/* การ์ดตั้งเวลา */}
+                            <div className="schedule-card">
+                                <div className="schedule-header">
+                                    <Clock className="schedule-icon" size={32} />
+                                    <h2>ตั้งเวลาการทำงาน</h2>
+                                    <div className="toggle-switch">
+                                        <input type="checkbox" id="schedule-toggle" checked={scheduleEnabled} onChange={handleScheduleToggle} />
+                                        <label htmlFor="schedule-toggle"></label>
+                                    </div>
+                                </div>
+                                <div className={`schedule-content ${!scheduleEnabled ? 'disabled' : ''}`}>
+                                    <div className="time-settings">
+                                        <div className="time-group">
+                                            <label htmlFor="start-time">เวลาเริ่มทำงาน</label>
+                                            <input type="time" id="start-time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                                        </div>
+                                        <div className="time-group">
+                                            <label htmlFor="end-time">เวลาหยุดทำงาน</label>
+                                            <input type="time" id="end-time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <div className="days-selection">
+                                        <h3>วันที่ทำงาน</h3>
+                                        <div className="days-grid">
+                                            {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map((day, index) => (
+                                                <div key={index} className={`day-item ${scheduleDays[index] ? 'active' : ''}`} onClick={() => handleDayToggle(index)}>
+                                                    {day}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="schedule-mode">
+                                        <h3>โหมดการทำงาน</h3>
+                                        <div className="mode-buttons">
+                                            {['high', 'medium', 'low', 'auto'].map((m) => (
+                                                <button key={m} className={`mode-btn ${scheduleMode === m ? 'active' : ''}`} onClick={() => handleScheduleModeChange(m)}>
+                                                    <Gauge size={20} /><span>{m === 'high' ? 'แรง' : m === 'medium' ? 'ปานกลาง' : m === 'low' ? 'เบา' : 'อัตโนมัติ'}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="device-status-card">
-                            <div className="status-header">
-                                <Fan
-                                    className={`device-icon${power && mode !== 'off' ? ' spinning' : ''}`}
-                                    size={48}
-                                />
-                                <h2>สถานะการทำงาน</h2>
-                            </div>
-                            <div className="status-content">
-                                <div style={{ display: "flex", justifyContent: "center" }}>
-                                    <p
-                                        className={
-                                            `current-mode-highlight${mode === 'off' ? ' mode-off' : ''}`
-                                        }
-                                    >
-                                        โหมดปัจจุบัน: {
-                                            mode === 'high' ? 'แรง' :
-                                            mode === 'medium' ? 'ปานกลาง' :
-                                            mode === 'low' ? 'เบา' :
-                                            mode === 'auto' ? 'อัตโนมัติ' :
-                                            mode === 'sleep' ? 'กลางคืน' : 'ปิด'
-                                        }
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="device-controls">
-                            <button className={`control-btn power-btn ${power ? 'active' : ''}`} onClick={handlePowerToggle}>
-                                <Power size={24} /><span>{power ? 'ปิด' : 'เปิด'}</span>
-                            </button>
-                            <button className={`control-btn ${mode === 'high' ? 'active' : ''}`} onClick={() => handleModeChange('high')} disabled={!power}>
-                                <Gauge size={24} /><span>แรง</span>
-                            </button>
-                            <button className={`control-btn ${mode === 'medium' ? 'active' : ''}`} onClick={() => handleModeChange('medium')} disabled={!power}>
-                                <Gauge size={24} /><span>ปานกลาง</span>
-                            </button>
-                            <button className={`control-btn ${mode === 'low' ? 'active' : ''}`} onClick={() => handleModeChange('low')} disabled={!power}>
-                                <Gauge size={24} /><span>เบา</span>
-                            </button>
-                            <button className={`control-btn ${mode === 'auto' ? 'active' : ''}`} onClick={() => handleModeChange('auto')} disabled={!power}>
-                                <Fan size={24} /><span>อัตโนมัติ</span>
-                            </button>
-                            <button className={`control-btn ${mode === 'sleep' ? 'active' : ''}`} onClick={() => handleModeChange('sleep')} disabled={!power}>
-                                <Moon size={24} /><span>กลางคืน</span>
-                            </button>
-                        </div>
-
-                        {/* การ์ดตั้งเวลา */}
-                        <div className="schedule-card">
-                            <div className="schedule-header">
-                                <Clock className="schedule-icon" size={32} />
-                                <h2>ตั้งเวลาการทำงาน</h2>
-                                <div className="toggle-switch">
-                                    <input type="checkbox" id="schedule-toggle" checked={scheduleEnabled} onChange={handleScheduleToggle} />
-                                    <label htmlFor="schedule-toggle"></label>
-                                </div>
-                            </div>
-                            <div className={`schedule-content ${!scheduleEnabled ? 'disabled' : ''}`}>
-                                <div className="time-settings">
-                                    <div className="time-group">
-                                        <label htmlFor="start-time">เวลาเริ่มทำงาน</label>
-                                        <input type="time" id="start-time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-                                    </div>
-                                    <div className="time-group">
-                                        <label htmlFor="end-time">เวลาหยุดทำงาน</label>
-                                        <input type="time" id="end-time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-                                    </div>
-                                </div>
-                                <div className="days-selection">
-                                    <h3>วันที่ทำงาน</h3>
-                                    <div className="days-grid">
-                                        {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map((day, index) => (
-                                            <div key={index} className={`day-item ${scheduleDays[index] ? 'active' : ''}`} onClick={() => handleDayToggle(index)}>
-                                                {day}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="schedule-mode">
-                                    <h3>โหมดการทำงาน</h3>
-                                    <div className="mode-buttons">
-                                        {['high', 'medium', 'low', 'auto'].map((m) => (
-                                            <button key={m} className={`mode-btn ${scheduleMode === m ? 'active' : ''}`} onClick={() => handleScheduleModeChange(m)}>
-                                                <Gauge size={20} /><span>{m === 'high' ? 'แรง' : m === 'medium' ? 'ปานกลาง' : m === 'low' ? 'เบา' : 'อัตโนมัติ'}</span>
+                            {/* Popup ตั้งค่าเครื่อง */}
+                            {showDeviceSetting && (
+                                <div className="device-setting-modal-backdrop" onClick={() => setShowDeviceSetting(false)}>
+                                    <div className="device-setting-modal" onClick={e => e.stopPropagation()}>
+                                        <h2>ตั้งค่าเครื่อง</h2>
+                                        <div style={{ marginBottom: 16 }}>
+                                            <label>ชื่อเครื่อง:</label>
+                                            <input
+                                                type="text"
+                                                value={editName}
+                                                onChange={e => setEditName(e.target.value)}
+                                                placeholder="ตั้งชื่อเครื่อง"
+                                                style={{ width: "100%", padding: 8, marginTop: 4, borderRadius: 6, border: "1px solid #ccc" }}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: 16 }}>
+                                            <label>ที่ตั้ง:</label>
+                                            <input
+                                                type="text"
+                                                value={editLocation}
+                                                onChange={e => setEditLocation(e.target.value)}
+                                                placeholder="ระบุที่ตั้ง"
+                                                style={{ width: "100%", padding: 8, marginTop: 4, borderRadius: 6, border: "1px solid #ccc" }}
+                                            />
+                                        </div>
+                                        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+                                            <button
+                                                className="cancel-setting-btn"
+                                                type="button"
+                                                onClick={() => setShowDeviceSetting(false)}
+                                                style={{ padding: "8px 16px", borderRadius: 6, border: "none", background: "#bbb", color: "#fff" }}
+                                            >
+                                                ยกเลิก
                                             </button>
-                                        ))}
+                                            <button
+                                                className="save-setting-btn"
+                                                type="button"
+                                                onClick={async () => {
+                                                    await handleUpdateDevice();
+                                                    setShowDeviceSetting(false);
+                                                }}
+                                                style={{ padding: "8px 16px", borderRadius: 6, border: "none", background: "#26c42e", color: "#fff" }}
+                                            >
+                                                บันทึก
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            )}
                         </>
                     )}
                 </div>
             </div>
+
+            {/* Modal แสดง PIN เฉพาะปุ่มข้าง select */}
+            {showPinModal && (
+                <div className="pin-modal-backdrop" onClick={() => setShowPinModal(false)}>
+                    <div className="pin-modal" onClick={e => e.stopPropagation()}>
+                        <div className="pin-title">PIN 6 หลัก ของคุณคือ</div>
+                        <div className="pin-value">{generatedPin}</div>
+                        <div className="pin-desc">นำ PIN นี้ไปเพิ่มอุปกรณ์ในแอปหรืออุปกรณ์จริง</div>
+                        <button className="close-pin-modal-btn" onClick={() => setShowPinModal(false)}>ปิด</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

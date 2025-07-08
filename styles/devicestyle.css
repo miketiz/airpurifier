@@ -731,3 +731,183 @@
         border-radius: 10px;
     }
 }
+
+.add-device-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-size: 2rem;
+  color: #7f8c8d;
+}
+
+.pin-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #26c42e22;
+  padding: 28px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  font-size: 1.5rem;
+}
+
+.pin-title {
+  color: #26c42e;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.pin-value {
+  font-size: 2.5rem;
+  letter-spacing: 10px;
+  color: #2c3e50;
+  background: #e8ffe8;
+  border-radius: 12px;
+  padding: 12px 32px;
+  margin: 12px 0;
+}
+
+.pin-desc {
+  color: #888;
+  font-size: 1rem;
+}
+
+.add-device-btn {
+  background: linear-gradient(90deg, #26c42e 0%, #1db45a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 16px 36px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(38,196,46,0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.select-device-btn {
+  background: linear-gradient(90deg, #26c42e 0%, #1db45a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  /* box-shadow: 0 4px 15px rgba(38,196,46,0.15); */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  /* margin-bottom: 16px; */
+  
+}
+
+.device-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.device-select {
+  padding: 12px 20px;
+  border-radius: 18px;
+  border: 1.5px solid #26c42e;
+  font-size: 1.1rem;
+  color: #222;
+  background: #f8fff8;
+  font-weight: 600;
+  min-width: 220px;
+  box-shadow: 0 2px 8px #26c42e11;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.device-select:focus {
+  outline: none;
+  border: 2px solid #1db45a;
+  box-shadow: 0 2px 12px #26c42e22;
+}
+
+@media (max-width: 600px) {
+  .device-select-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .device-select {
+    min-width: unset;
+    width: 100%;
+  }
+}
+
+.pin-modal-backdrop {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pin-modal {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #26c42e22;
+  padding: 32px 36px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  font-size: 1.5rem;
+  animation: fadeIn 0.2s;
+}
+.close-pin-modal-btn {
+  margin-top: 10px;
+  background: #26c42e;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96);}
+  to { opacity: 1; transform: scale(1);}
+}
+
+/* เพิ่มใน devicestyle.css หรือ global css */
+.device-setting-modal-backdrop {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.device-setting-modal {
+    background: var(--background, #fff);
+    color: var(--text-primary, #222);
+    border-radius: 14px;
+    padding: 32px 24px 24px 24px;
+    min-width: 320px;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    font-family: 'Kanit', sans-serif;
+}
+.dark .device-setting-modal {
+    background: #232d23;
+    color: #e9ecef;
+}
