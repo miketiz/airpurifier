@@ -52,7 +52,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // อัพเดท class เมื่อ darkMode เปลี่ยน
   useEffect(() => {
     if (!mounted) return;
-    
+
     try {
       // ไม่เพิ่ม dark class ถ้าเป็นหน้า login หรือ register
       if (!isNoThemePage) {
@@ -68,13 +68,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.remove('light');
       }
-      
+
       // บันทึกค่าทั้งสองที่
       localStorage.setItem(STORAGE_KEYS.DARK_MODE, JSON.stringify(darkMode));
     } catch (error) {
       console.error('Error saving to localStorage:', error);
     }
-  }, [darkMode, mounted, pathname]);
+  }, [darkMode, mounted, pathname, isNoThemePage]);
 
   const toggleDarkMode = () => {
     try {

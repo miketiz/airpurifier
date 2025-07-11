@@ -1,0 +1,213 @@
+/* Empty device state styles - ปรับปรุงใหม่ */
+.add-device-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    padding: 2.5rem;
+    background-color: #f8fafc;
+    background-image: linear-gradient(135deg, #f8fafc 0%, #eef5ff 100%);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 550px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.add-device-empty::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    height: 10px;
+    background: linear-gradient(90deg, #3b82f6, #26c42e);
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.3;
+}
+
+.add-device-empty > span {
+    margin-bottom: 28px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #64748b;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    position: relative;
+}
+
+.add-device-empty > span::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #26c42e);
+    border-radius: 3px;
+}
+
+.add-device-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.add-device-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: all 0.5s ease;
+    z-index: -1;
+}
+
+.add-device-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+.add-device-btn:hover::before {
+    left: 100%;
+}
+
+.add-device-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.add-device-btn:disabled {
+    background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 8px rgba(147, 197, 253, 0.3);
+}
+
+.pin-card {
+    background-color: white;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.pin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.pin-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #26c42e);
+}
+
+.pin-title {
+    font-size: 1.25rem;
+    color: #1e293b;
+    margin-bottom: 20px;
+    font-weight: 600;
+    position: relative;
+    display: inline-block;
+}
+
+.pin-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #26c42e);
+    border-radius: 3px;
+}
+
+.pin-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1e40af;
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: #f0f9ff;
+    border-radius: 8px;
+}
+
+.pin-desc {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* Modal styles */
+.pin-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.pin-modal {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.close-pin-modal-btn {
+  margin-top: 20px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-pin-modal-btn:hover {
+  background-color: #2563eb;
+}

@@ -9,7 +9,7 @@ export default function ResetPassword() {
     const searchParams = useSearchParams();
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [token, setToken] = useState(searchParams.get("token") || "");
+    const [token] = useState(searchParams.get("token") || "");
     const [email, setEmail] = useState("");
 
     useEffect(() => {

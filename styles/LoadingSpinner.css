@@ -1,0 +1,254 @@
+/* Loading Spinner Styles - สวยงามและเข้ากับธีม */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 3rem;
+  background-color: #f8fafc;
+  background-image: linear-gradient(135deg, #f8fafc 0%, #eef5ff 100%);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(38, 196, 46, 0.08);
+  position: relative;
+  overflow: hidden;
+  margin: 2rem auto;
+  max-width: 900px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.3s ease;
+}
+
+/* Top gradient line */
+.loading-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #26c42e, #1db45a);
+  z-index: 5;
+}
+
+/* Circular background for spinner */
+.loading-spinner-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 8px 16px rgba(38, 196, 46, 0.15));
+}
+
+/* Outer spinner */
+.loading-spinner {
+  width: 100%;
+  height: 100%;
+  border: 4px solid rgba(38, 196, 46, 0.1);
+  border-radius: 50%;
+  border-top-color: #26c42e;
+  animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  position: absolute;
+}
+
+/* Middle spinner */
+.loading-spinner::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 4px solid rgba(0, 150, 255, 0.08);
+  border-radius: 50%;
+  border-right-color: #0095ff;
+  animation: spin-reverse 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+/* Inner spinner */
+.loading-spinner::after {
+  content: '';
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  right: 25px;
+  bottom: 25px;
+  border: 3px solid rgba(38, 196, 46, 0.05);
+  border-radius: 50%;
+  border-bottom-color: #26c42e;
+  animation: spin 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+/* Leaf icon in center */
+.spinner-icon {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  color: #26c42e;
+  opacity: 0.9;
+  animation: pulse 2s ease-in-out infinite;
+  z-index: 2;
+}
+
+/* Loading message text */
+.loading-message {
+  font-size: 1.5rem;
+  font-family: 'Kanit', sans-serif;
+  font-weight: 500;
+  color: #26c42e;
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  text-shadow: 0 1px 2px rgba(38, 196, 46, 0.1);
+}
+
+/* Progress bar */
+.loading-progress-container {
+  width: 250px;
+  height: 6px;
+  background-color: rgba(226, 232, 240, 0.7);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 20px;
+}
+
+.loading-progress {
+  height: 100%;
+  width: 50%;
+  background: linear-gradient(90deg, #26c42e, #1db45a);
+  border-radius: 10px;
+  position: absolute;
+  left: -50%;
+  animation: progress 2s ease-in-out infinite;
+}
+
+/* Tips section */
+.loading-tips-container {
+  margin-top: 40px;
+  max-width: 500px;
+  padding: 16px 24px;
+  background-color: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e6ffe6;
+  animation: fadeIn 0.5s ease;
+}
+
+.loading-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.tip-icon {
+  color: #26c42e;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Dark mode support */
+.dark .loading-container {
+  background-image: linear-gradient(135deg, #232d23 0%, #1b2e1b 100%);
+  border: 1px solid #1db45a;
+  box-shadow: 0 12px 30px rgba(29, 180, 90, 0.15);
+}
+
+.dark .loading-spinner {
+  border-top-color: #1db45a;
+}
+
+.dark .loading-spinner::before {
+  border-right-color: #00bfff;
+}
+
+.dark .loading-spinner::after {
+  border-bottom-color: #1db45a;
+}
+
+.dark .spinner-icon {
+  color: #1db45a;
+}
+
+.dark .loading-message {
+  color: #a0aec0;
+  text-shadow: none;
+}
+
+.dark .loading-progress-container {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .loading-progress {
+  background: linear-gradient(90deg, #1db45a, #26c42e);
+}
+
+/* Animations */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.6;
+  }
+}
+
+@keyframes ellipsis {
+  0% { content: '.'; }
+  33% { content: '..'; }
+  66% { content: '...'; }
+  100% { content: '.'; }
+}
+
+@keyframes progress {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* เพิ่ม responsive styling */
+@media (max-width: 640px) {
+  .loading-container {
+    min-height: 300px;
+    padding: 2rem;
+  }
+  
+  .loading-spinner-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .loading-progress {
+    width: 160px;
+  }
+}

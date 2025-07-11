@@ -22,7 +22,6 @@ export default function Login() {
     const [passwordlogin, setPasswordlogin] = useState("");
     const [message, setMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Smooth transition function
     const handleViewTransition = (newView: string) => {

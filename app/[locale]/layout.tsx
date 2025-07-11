@@ -1,28 +1,28 @@
-import {NextIntlClientProvider} from 'next-intl';
-import {notFound} from 'next/navigation';
- 
+import { NextIntlClientProvider } from 'next-intl';
+import { notFound } from 'next/navigation';
+
 export function generateStaticParams() {
-  return [{locale: 'th'}, {locale: 'en'}];
+  return [{ locale: 'th' }, { locale: 'en' }];
 }
- 
+
 export default async function LocaleLayout({
   children,
-  params: {locale}
+  params,
 }: {
   children: React.ReactNode;
-  params: {locale: string};
+  params: { locale: string };
 }) {
   let messages;
   try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
+    messages = (await import(`../../messages/${params.locale}.json`)).default;
   } catch (error) {
     notFound();
   }
- 
+
   return (
-    <html lang={locale}>
+    <html lang={params.locale}>
       <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={params.locale} messages={messages}>
           {children}
         </NextIntlClientProvider>
       </body>

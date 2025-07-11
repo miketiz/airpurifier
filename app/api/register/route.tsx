@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
+import axios, { type AxiosError } from "axios";
 
 export async function POST(request: Request) {
     try {
@@ -28,7 +28,8 @@ export async function POST(request: Request) {
                 message: "ลงทะเบียนสำเร็จ",
                 data: response.data,
             });
-        } catch (axiosError: any) {
+        } catch (error: unknown) {
+            const axiosError = error as AxiosError<{ detail?: string }>;
             if (
                 axiosError.response &&
                 axiosError.response.data?.detail === "Username or email already exists"

@@ -1,11 +1,98 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Sidebar from "../components/Sidebar";
-import { Fan, Power, Moon, Gauge, Thermometer, Droplets, Clock, PlusCircle, Settings } from "lucide-react";
+import {
+    Fan, Power, Moon, Gauge, Thermometer, Droplets, Clock,
+    PlusCircle, Settings, AirVent, Wind
+} from "lucide-react";
 import "@/styles/devicestyle.css";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
+import Select, {
+  components,
+  OptionProps,
+  SingleValueProps,
+  DropdownIndicatorProps,
+  GroupBase
+} from "react-select";
+import EmptyDeviceState from "../components/EmptyDeviceState"; // เพิ่ม import
+import LoadingSpinner from "../components/LoadingSpinner";
+
+// กำหนด type สำหรับ device
+type Device = {
+    device_id: string;
+    connection_key: string;
+    device_name?: string;
+    location?: string;
+};
+
+// กำหนด type สำหรับ option ของ react-select
+type DeviceOptionType = {
+    value: string;
+    label: string;
+    isActive?: boolean;
+};
+
+// Custom components สำหรับ react-select
+const DeviceOption = (props: OptionProps<DeviceOptionType, false, GroupBase<DeviceOptionType>>) => (
+    <components.Option {...props}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "2px 0" }}>
+            <div style={{
+                backgroundColor: props.isSelected ? "#e6f7ff" : "#f0f8ff",
+                borderRadius: "50%",
+                padding: 6,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+            }}>
+                <AirVent
+                    size={18}
+                    style={{
+                        color: props.isSelected ? "#0095ff" : "#66b3ff"
+                    }}
+                />
+            </div>
+            <span>{props.data.label}</span>
+            {props.data.isActive && (
+                <span style={{
+                    fontSize: "12px",
+                    background: "#e6ffed",
+                    color: "#52c41a",
+                    padding: "2px 8px",
+                    borderRadius: "10px",
+                    marginLeft: "auto"
+                }}>กำลังทำงาน</span>
+            )}
+        </div>
+    </components.Option>
+);
+
+const DeviceSingleValue = (props: SingleValueProps<DeviceOptionType, false, GroupBase<DeviceOptionType>>) => (
+    <components.SingleValue {...props}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+                backgroundColor: "#f0f8ff",
+                borderRadius: "50%",
+                padding: 5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+            }}>
+                <AirVent size={16} style={{ color: "#0095ff" }} />
+            </div>
+            <span>{props.data.label}</span>
+        </div>
+    </components.SingleValue>
+);
+
+const DropdownIndicator = (props: DropdownIndicatorProps<DeviceOptionType, false, GroupBase<DeviceOptionType>>) => {
+    return (
+        <components.DropdownIndicator {...props}>
+            <Wind size={18} style={{ color: "#66b3ff" }} />
+        </components.DropdownIndicator>
+    );
+};
 
 export default function Devices() {
     const [power, setPower] = useState(false);
@@ -27,20 +114,19 @@ export default function Devices() {
 
     // เพิ่ม state สำหรับจำลองว่ามีเครื่องหรือไม่
     const [hasDevice, setHasDevice] = useState(false);
-    const [pin, setPin] = useState("");
-    const [deviceName, setDeviceName] = useState("");
-    const [formError, setFormError] = useState("");
+    const [isDeviceLoading, setIsDeviceLoading] = useState(true);
 
     const { data: session } = useSession();
     const [generatedPin, setGeneratedPin] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [deviceList, setDeviceList] = useState<any[]>([]);
-    const [selectedDevice, setSelectedDevice] = useState<any>(null);
+    const [deviceList, setDeviceList] = useState<Device[]>([]);
+    const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
     const [editName, setEditName] = useState("");
     const [editLocation, setEditLocation] = useState("");
-    const [isEditing, setIsEditing] = useState(false);
     const [showPinModal, setShowPinModal] = useState(false);
     const [showDeviceSetting, setShowDeviceSetting] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteDeviceId, setDeleteDeviceId] = useState<string | null>(null);
 
     const calculateAQI = (pm25Value: number) => {
         if (pm25Value <= 12.0) return Math.round((50 - 0) / (12.0 - 0) * (pm25Value - 0) + 0);
@@ -61,7 +147,8 @@ export default function Devices() {
         return "อันตราย";
     };
 
-    const fetchIndoorDustData = async () => {
+    // ใช้ useCallback เพื่อแก้ warning dependency
+    const fetchIndoorDustData = useCallback(async () => {
         try {
             setLoading(true);
             const response = await fetch('/api/dustdata');
@@ -80,7 +167,7 @@ export default function Devices() {
             console.error('Error fetching dust data:', error);
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchIndoorDustData();
@@ -88,7 +175,7 @@ export default function Devices() {
             fetchIndoorDustData();
         }, 5 * 60 * 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchIndoorDustData]);
 
     const handlePowerToggle = () => {
         setPower(!power);
@@ -114,18 +201,6 @@ export default function Devices() {
         setScheduleMode(mode);
     };
 
-    const handleAddDevice = () => {
-        if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
-            setFormError("กรุณากรอก PIN 6 หลัก (ตัวเลขเท่านั้น)");
-            return;
-        }
-        if (!deviceName.trim()) {
-            setFormError("กรุณาตั้งชื่อเครื่อง");
-            return;
-        }
-        setFormError("");
-        setHasDevice(true);
-    };
     const handleGeneratePin = async (showModal = false) => {
         setIsGenerating(true);
         if (!session?.user?.id) {
@@ -146,22 +221,62 @@ export default function Devices() {
         setIsGenerating(false);
     };
 
+    // แก้ไขส่วน useEffect ที่ดึงข้อมูลอุปกรณ์
     useEffect(() => {
         if (!session?.user?.id) {
             console.log("session ยังไม่มี user id", session);
+            setIsDeviceLoading(false);
             return;
         }
-        axios.get(`/api/devices?user_id=${session.user.id}`)
+        
+        // ตรวจสอบเพื่อป้องกันการโหลดซ้ำเมื่อเพิ่งสร้าง PIN แต่ยังไม่มีเครื่อง
+        if (generatedPin) {
+            // ถ้ามีการสร้าง PIN ให้ตรวจสอบก่อนว่ามีเครื่องหรือยัง
+            // แต่ไม่ควรแสดง loading screen ในกรณีนี้
+            axios.get(`/api/devices?user_id=${session!.user!.id}`)
+                .then(res => {
+                    const data = res.data;
+                    const devices: Device[] = Array.isArray(data.data)
+                        ? data.data
+                        : data.data
+                            ? [data.data]
+                            : [];
+                    
+                    // อัพเดตเฉพาะถ้ามีเครื่อง
+                    if (devices.length > 0) {
+                        setHasDevice(true);
+                        setDeviceList(devices);
+                        setSelectedDevice(devices[0]);
+                    } else {
+                        setHasDevice(false);
+                        setDeviceList([]);
+                        setSelectedDevice(null);
+                    }
+                    
+                    // ไม่ต้องเปลี่ยน loading state ในกรณีนี้
+                })
+                .catch((error) => {
+                    console.error("Error fetching devices:", error);
+                });
+            
+            return; // ไม่ดำเนินการต่อ
+        }
+        
+        // โหลดข้อมูลตามปกติเมื่อเพิ่งเข้าหน้า
+        setIsDeviceLoading(true);
+        
+        axios.get(`/api/devices?user_id=${session!.user!.id}`)
             .then(res => {
                 const data = res.data;
                 console.log("API /api/devices response:", data);
-                let devices = [];
-                if (Array.isArray(data.data)) {
-                    devices = data.data;
-                } else if (data.data) {
-                    devices = [data.data];
-                }
+                const devices: Device[] = Array.isArray(data.data)
+                    ? data.data
+                    : data.data
+                        ? [data.data]
+                        : [];
                 console.log("devices ที่ได้:", devices);
+                
+                // อัพเดต state ทั้งหมด
                 if (devices.length > 0) {
                     setHasDevice(true);
                     setDeviceList(devices);
@@ -171,17 +286,21 @@ export default function Devices() {
                     setDeviceList([]);
                     setSelectedDevice(null);
                 }
+                
+                setTimeout(() => {
+                    setIsDeviceLoading(false);
+                }, 500);
             })
-            .catch((err) => {
+            .catch((error) => {
+                console.error("Error fetching devices:", error);
                 setHasDevice(false);
                 setDeviceList([]);
                 setSelectedDevice(null);
-                console.log("API error", err);
+                setIsDeviceLoading(false);
             });
-    }, [session?.user?.id, generatedPin]);
+    }, [session, generatedPin]);
 
     const handleUpdateDevice = async () => {
-        console.log("session", session);
         if (!selectedDevice || !session?.user?.id) {
             toast.error("กรุณาเข้าสู่ระบบก่อน");
             return;
@@ -192,14 +311,53 @@ export default function Devices() {
                 device_name: editName,
                 location: editLocation
             };
-            console.log("payload", payload);
             await axios.patch("/api/devices", payload, { withCredentials: true });
-            setIsEditing(false);
             toast.success("บันทึกข้อมูลสำเร็จ");
-        } catch (err) {
+        } catch {
             toast.error("เปลี่ยนชื่อ/ที่ตั้งไม่สำเร็จ");
         }
     };
+
+    // const handleDeleteDevice = async () => {
+    //     if (!selectedDevice || !session?.user?.id) {
+    //         toast.error("กรุณาเข้าสู่ระบบก่อน");
+    //         return;
+    //     }
+    //     if (!window.confirm("คุณต้องการลบอุปกรณ์นี้ใช่หรือไม่?")) return;
+    //     try {
+    //         await axios.delete("/api/delete-device", {
+    //             data: { connection_key: selectedDevice.connection_key },
+    //             withCredentials: true,
+    //         });
+    //         toast.success("ลบอุปกรณ์สำเร็จ");
+    //         // รีเฟรช device list
+    //         const res = await axios.get(`/api/devices?user_id=${session.user.id}`);
+    //         const data = res.data;
+    //         const devices: Device[] = Array.isArray(data.data) ? data.data : [data.data];
+    //         setDeviceList(devices);
+    //         setSelectedDevice(devices[0] || null);
+    //         setHasDevice(devices.length > 0);
+    //         setShowDeviceSetting(false);
+    //     } catch {
+    //         toast.error("ลบอุปกรณ์ไม่สำเร็จ");
+    //     }
+    // };
+
+    // สร้าง options สำหรับ react-select
+    const deviceOptions = deviceList.map((device, idx) => ({
+        value: device.device_id,
+        label: device.device_name
+            ? `${device.device_name}`
+            : `เครื่อง ${idx + 1}`,
+        isActive: power && mode !== 'off' && selectedDevice?.device_id === device.device_id,
+    }));
+
+    useEffect(() => {
+        if (selectedDevice) {
+            setEditName(selectedDevice.device_name || '');
+            setEditLocation(selectedDevice.location || '');
+        }
+    }, [selectedDevice]);
 
     return (
         <div className="dashboard-container">
@@ -207,51 +365,123 @@ export default function Devices() {
             <Sidebar />
             <div className="main-content">
                 <div className="device-container">
-                    {!hasDevice ? (
-                        <div className="add-device-empty">
-                            <span style={{ marginBottom: 24 }}>ยังไม่มีเครื่อง</span>
-                            {generatedPin ? (
-                                <div className="pin-card">
-                                    <div className="pin-title">PIN 6 หลัก ของคุณคือ</div>
-                                    <div className="pin-value">{generatedPin}</div>
-                                    <div className="pin-desc">นำ PIN นี้ไปเพิ่มอุปกรณ์ในแอปหรืออุปกรณ์จริง</div>
-                                </div>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => handleGeneratePin(false)}
-                                    disabled={isGenerating}
-                                    className="add-device-btn"
-                                >
-                                    <PlusCircle size={24} /> {isGenerating ? "กำลังสร้าง..." : "เพิ่มเครื่อง"}
-                                </button>
-                            )}
-                        </div>
+                    {isDeviceLoading ? (
+                        // แสดง Loading Spinner ระหว่างโหลดข้อมูล
+                        <LoadingSpinner message="กำลังโหลดข้อมูลอุปกรณ์..." />
+                    ) : !hasDevice ? (
+                        // แสดง EmptyDeviceState หลังจากโหลดเสร็จแล้วและไม่มีเครื่อง
+                        <EmptyDeviceState onDeviceAdded={() => {
+                            if (!session?.user?.id) return;
+                            setIsDeviceLoading(true); // เริ่มโหลดอีกครั้งเมื่อเพิ่มเครื่อง
+                            axios.get(`/api/devices?user_id=${session.user.id}`)
+                                .then(res => {
+                                    const data = res.data;
+                                    const devices: Device[] = Array.isArray(data.data)
+                                        ? data.data
+                                        : data.data
+                                            ? [data.data]
+                                            : [];
+                                    if (devices.length > 0) {
+                                        setHasDevice(true);
+                                        setDeviceList(devices);
+                                        setSelectedDevice(devices[0]);
+                                    }
+                                    setIsDeviceLoading(false); // สิ้นสุดการโหลด
+                                })
+                                .catch(error => {
+                                    console.error("Error fetching devices:", error);
+                                    setIsDeviceLoading(false);
+                                });
+                        }} />
                     ) : (
+                        // แสดงหน้าควบคุมเครื่องเมื่อมีเครื่อง
                         <>
                             <h1 className="device-title">ควบคุมเครื่องฟอกอากาศ</h1>
                             {/* Dropdown หลัก */}
                             <div className="device-select-row">
-                                <select
-                                    name="select-device"
-                                    id="select-device"
-                                    className="device-select"
-                                    value={selectedDevice?.device_id ? String(selectedDevice.device_id) : ""}
-                                    onChange={e => {
-                                        const found = deviceList.find(
-                                            d => String(d.device_id) === e.target.value
-                                        );
-                                        setSelectedDevice(found);
+                                <Select<DeviceOptionType, false, GroupBase<DeviceOptionType>>
+                                    className="react-select-container"
+                                    classNamePrefix="react-select"
+                                    options={deviceOptions}
+                                    value={
+                                        selectedDevice
+                                            ? deviceOptions.find(opt => opt.value === selectedDevice.device_id)
+                                            : null
+                                    }
+                                    onChange={(option) => {
+                                        if (option && typeof option === 'object' && 'value' in option) {
+                                            const found = deviceList.find(d => d.device_id === option.value);
+                                            setSelectedDevice(found ?? null);
+                                        } else {
+                                            setSelectedDevice(null);
+                                        }
                                     }}
-                                >
-                                    {deviceList.map((device, idx) => (
-                                        <option key={`main-${device.device_id}`} value={String(device.device_id)}>
-                                            {device.device_name
-                                                ? `เครื่อง ${idx + 1} (${device.device_name})`
-                                                : `เครื่อง ${idx + 1} (ยังไม่มีชื่อเครื่อง)`}
-                                        </option>
-                                    ))}
-                                </select>
+                                    placeholder="เลือกเครื่อง..."
+                                    isSearchable={false}
+                                    components={{
+                                        Option: DeviceOption,
+                                        SingleValue: DeviceSingleValue,
+                                        DropdownIndicator
+                                    }}
+                                    styles={{
+                                        container: base => ({
+                                            ...base,
+                                            minWidth: 260,
+                                            maxWidth: 340,
+                                        }),
+                                        control: base => ({
+                                            ...base,
+                                            borderRadius: 12,
+                                            border: "1px solid #e2e8f0",
+                                            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                                            minHeight: 48,
+                                            transition: "all 0.2s ease",
+                                            "&:hover": {
+                                                borderColor: "#90cdf4"
+                                            }
+                                        }),
+                                        menu: base => ({
+                                            ...base,
+                                            zIndex: 9999,
+                                            overflow: "hidden",
+                                            borderRadius: 12,
+                                            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                                        }),
+                                        menuList: base => ({
+                                            ...base,
+                                            padding: "8px"
+                                        }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            borderRadius: 8,
+                                            padding: "10px 12px",
+                                            cursor: "pointer",
+                                            backgroundColor: state.isSelected
+                                                ? "#ebf8ff"
+                                                : state.isFocused
+                                                    ? "#f7fafc"
+                                                    : "white",
+                                            color: state.isSelected ? "#2b6cb0" : "#4a5568",
+                                            fontWeight: state.isSelected ? 500 : 400,
+                                            "&:hover": {
+                                                backgroundColor: state.isSelected ? "#ebf8ff" : "#f7fafc"
+                                            },
+                                            transition: "all 0.2s ease"
+                                        }),
+                                        singleValue: base => ({
+                                            ...base,
+                                            color: "#2d3748",
+                                        }),
+                                        placeholder: base => ({
+                                            ...base,
+                                            color: "#a0aec0",
+                                        }),
+                                        valueContainer: base => ({
+                                            ...base,
+                                            padding: "2px 16px"
+                                        })
+                                    }}
+                                />
                                 <button
                                     onClick={() => handleGeneratePin(true)}
                                     disabled={isGenerating}
@@ -262,6 +492,15 @@ export default function Devices() {
                                     {isGenerating ? "กำลังสร้าง..." : "เพิ่มเครื่อง"}
                                 </button>
                                 {/* ปุ่มตั้งค่าเครื่อง */}
+                                <button
+                                    className="delete-device-btn"
+                                    type="button"
+                                    onClick={() => {
+                                        setShowDeleteModal(true);
+                                    }}
+                                >
+                                    ลบเครื่อง
+                                </button>
                                 <button
                                     className="device-setting-btn"
                                     type="button"
@@ -393,7 +632,7 @@ export default function Devices() {
                                 </div>
                             </div>
 
-                            {/* Popup ตั้งค่าเครื่อง */}
+                            {/* Popup ตั้งเวลาเครื่อง */}
                             {showDeviceSetting && (
                                 <div className="device-setting-modal-backdrop" onClick={() => setShowDeviceSetting(false)}>
                                     <div className="device-setting-modal" onClick={e => e.stopPropagation()}>
@@ -405,7 +644,7 @@ export default function Devices() {
                                                 value={editName}
                                                 onChange={e => setEditName(e.target.value)}
                                                 placeholder="ตั้งชื่อเครื่อง"
-                                                style={{ width: "100%", padding: 8, marginTop: 4, borderRadius: 6, border: "1px solid #ccc" }}
+                                                style={{ width: "100%", maxWidth: "300px", padding: 8, marginTop: 4, borderRadius: 6, border: "1px solid #ccc" }}
                                             />
                                         </div>
                                         <div style={{ marginBottom: 16 }}>
@@ -415,7 +654,7 @@ export default function Devices() {
                                                 value={editLocation}
                                                 onChange={e => setEditLocation(e.target.value)}
                                                 placeholder="ระบุที่ตั้ง"
-                                                style={{ width: "100%", padding: 8, marginTop: 4, borderRadius: 6, border: "1px solid #ccc" }}
+                                                style={{ width: "100%", maxWidth: "300px", padding: 8, marginTop: 4, borderRadius: 6, border: "1px solid #ccc" }}
                                             />
                                         </div>
                                         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
@@ -437,6 +676,72 @@ export default function Devices() {
                                                 style={{ padding: "8px 16px", borderRadius: 6, border: "none", background: "#26c42e", color: "#fff" }}
                                             >
                                                 บันทึก
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Modal ยืนยันการลบอุปกรณ์ */}
+                            {showDeleteModal && (
+                                <div className="delete-modal-backdrop" onClick={() => setShowDeleteModal(false)}>
+                                    <div className="delete-modal" onClick={e => e.stopPropagation()}>
+                                        <h2>ยืนยันการลบอุปกรณ์</h2>
+                                        <p>เลือกอุปกรณ์ที่ต้องการลบ (การลบจะไม่สามารถกู้คืนได้)</p>
+                                        <select
+                                            style={{ width: "100%", padding: 8, marginBottom: 16, borderRadius: 6, border: "1px solid #ccc" }}
+                                            value={deleteDeviceId || ""}
+                                            onChange={e => setDeleteDeviceId(e.target.value)}
+                                        >
+                                            <option value="">-- เลือกเครื่อง --</option>
+                                            {deviceList.map(device => (
+                                                <option key={device.device_id} value={device.connection_key}>
+                                                    {device.device_name
+                                                        ? `${device.device_name} (${device.connection_key})`
+                                                        : `เครื่อง ${device.device_id} (${device.connection_key})`}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="delete-modal-actions">
+                                            <button
+                                                className="cancel-delete-btn"
+                                                type="button"
+                                                onClick={() => setShowDeleteModal(false)}
+                                            >
+                                                ยกเลิก
+                                            </button>
+                                            <button
+                                                className="confirm-delete-btn"
+                                                type="button"
+                                                disabled={!deleteDeviceId}
+                                                onClick={async () => {
+                                                    if (!session?.user?.id) {
+                                                        toast.error("กรุณาเข้าสู่ระบบก่อน");
+                                                        return;
+                                                    }
+                                                    if (deleteDeviceId) {
+                                                        try {
+                                                            await axios.delete("/api/delete-device", {
+                                                                data: { connection_key: deleteDeviceId },
+                                                                withCredentials: true,
+                                                            });
+                                                            toast.success("ลบอุปกรณ์สำเร็จ");
+                                                            setShowDeleteModal(false);
+                                                            setDeleteDeviceId(null);
+                                                            // รีเฟรช device list
+                                                            const res = await axios.get(`/api/devices?user_id=${session.user.id}`);
+                                                            const data = res.data;
+                                                            const devices: Device[] = Array.isArray(data.data) ? data.data : data.data ? [data.data] : [];
+                                                            setDeviceList(devices);
+                                                            setSelectedDevice(devices[0] || null);
+                                                            setHasDevice(devices.length > 0);
+                                                        } catch {
+                                                            toast.error("ลบอุปกรณ์ไม่สำเร็จ");
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                ยืนยันการลบ
                                             </button>
                                         </div>
                                     </div>

@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import Sidebar from "../components/Sidebar";
 import { BarChart, Calendar, Download, Filter } from "lucide-react";
 import "@/styles/reportstyle.css";
@@ -17,7 +18,9 @@ import {
 import { useEffect, useState } from "react";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { UserOptions } from 'jspdf-autotable';
+import EmptyDeviceState from "../components/EmptyDeviceState";
+import LoadingSpinner from "../components/LoadingSpinner"; // เพิ่มการ import LoadingSpinner 
+import { useSession } from "next-auth/react";
 
 // Register autoTable with jsPDF
 (jsPDF as any).API.autoTable = autoTable;
@@ -32,7 +35,17 @@ ChartJS.register(
     Legend
 );
 
+// เพิ่ม Device interface
+interface Device {
+    device_id: string | number;
+    device_name?: string;
+    // เพิ่ม properties อื่นๆ ตามที่จำเป็น
+}
+
 export default function Reports() {
+    // เพิ่ม state สำหรับการโหลดข้อมูลอุปกรณ์
+    const [isDeviceLoading, setIsDeviceLoading] = useState(true);
+    
     const [weeklyData, setWeeklyData] = useState<{
         labels: string[];
         values: number[];
@@ -45,6 +58,10 @@ export default function Reports() {
 
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [deviceList, setDeviceList] = useState<Device[]>([]);
+    const [hasDevice, setHasDevice] = useState(false);
+    const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+    const { data: session } = useSession();
 
     const fetchWeeklyData = async () => {
         try {
@@ -139,6 +156,88 @@ export default function Reports() {
         return () => clearTimeout(timer);
     }, []);
 
+    // ดึงข้อมูล devices
+    useEffect(() => {
+        if (!session?.user?.id) {
+            setIsDeviceLoading(false); // ถ้าไม่มี session ให้หยุดการโหลด
+            return;
+        }
+        
+        setIsDeviceLoading(true); // เริ่มการโหลด
+        
+        const fetchDevices = async () => {
+            try {
+                const res = await fetch(`/api/devices?user_id=${session.user.id}`);
+                const data = await res.json();
+                
+                const devices = Array.isArray(data.data)
+                    ? data.data
+                    : data.data
+                        ? [data.data]
+                        : [];
+                
+                // อัพเดต state ทั้งหมด        
+                if (devices.length > 0) {
+                    setDeviceList(devices);
+                    setSelectedDevice(devices[0]);
+                    setHasDevice(true);
+                } else {
+                    setDeviceList([]);
+                    setSelectedDevice(null);
+                    setHasDevice(false);
+                }
+                
+                // ใช้ setTimeout เพื่อให้แน่ใจว่า state อัพเดตเสร็จก่อน
+                setTimeout(() => {
+                    setIsDeviceLoading(false); // สิ้นสุดการโหลด
+                }, 500);
+            } catch (error) {
+                console.error("Error fetching devices:", error);
+                setDeviceList([]);
+                setSelectedDevice(null);
+                setHasDevice(false);
+                setIsDeviceLoading(false); // สิ้นสุดการโหลดกรณีมีข้อผิดพลาด
+            }
+        };
+        
+        fetchDevices();
+    }, [session?.user?.id]);
+
+    // ฟังก์ชันเรียกข้อมูลใหม่หลังเพิ่มเครื่อง
+    const refreshDeviceList = async () => {
+        if (!session?.user?.id) return;
+        
+        setIsDeviceLoading(true); // เริ่มการโหลดใหม่
+        
+        try {
+            const res = await fetch(`/api/devices?user_id=${session.user.id}`);
+            const data = await res.json();
+            
+            const devices = Array.isArray(data.data)
+                ? data.data
+                : data.data
+                    ? [data.data]
+                    : [];
+            
+            if (devices.length > 0) {
+                setDeviceList(devices);
+                setSelectedDevice(devices[0]);
+                setHasDevice(true);
+            } else {
+                setDeviceList([]);
+                setSelectedDevice(null);
+                setHasDevice(false);
+            }
+            
+            setTimeout(() => {
+                setIsDeviceLoading(false);
+            }, 500);
+        } catch (error) {
+            console.error("Error refreshing devices:", error);
+            setIsDeviceLoading(false);
+        }
+    };
+    
     const chartData = {
         labels: weeklyData.labels,
         datasets: [
@@ -174,65 +273,75 @@ export default function Reports() {
         },
     };
 
+    // แก้ไข return statement ให้แสดง Loading Spinner
     return (
         <div className="dashboard-container">
             <Sidebar />
             <div className="main-content">
-                <div className="report-container">
-                    <div className="report-header">
-                        <h1>รายงานและสถิติ</h1>
-                        <div className="report-actions">
-                            <button 
-                                className="export-btn"
-                                onClick={exportToPDF}
-                            >
-                                <Download size={20} />
-                                ส่งออกรายงาน
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="report-grid">
-                        <div className="report-card summary-card">
-                            <div className="summary-header">
-                                <BarChart className="summary-icon" />
-                                <h2>สรุปภาพรวม</h2>
-                            </div>
-                            <div className="summary-stats">
-                                <div className="stat-item">
-                                    <span className="stat-label">ค่าฝุ่นเฉลี่ย</span>
-                                    <span className="stat-value">{weeklyData.average}</span>
-                                    <span className="stat-unit">µg/m³</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-label">ชั่วโมงการทำงาน</span>
-                                    <span className="stat-value">168</span>
-                                    <span className="stat-unit">ชั่วโมง</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-label">ค่าสูงสุด</span>
-                                    <span className="stat-value">
-                                        {Math.max(...weeklyData.values).toFixed(1)}
-                                    </span>
-                                    <span className="stat-unit">µg/m³</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-label">ค่าต่ำสุด</span>
-                                    <span className="stat-value">
-                                        {Math.min(...weeklyData.values).toFixed(1)}
-                                    </span>
-                                    <span className="stat-unit">µg/m³</span>
-                                </div>
+                {isDeviceLoading ? (
+                    // แสดง Loading Spinner ระหว่างโหลดข้อมูล
+                    <LoadingSpinner message="กำลังโหลดข้อมูล..." />
+                ) : !hasDevice ? (
+                    // แสดงหน้า "ยังไม่มีเครื่อง" เมื่อโหลดเสร็จแล้วและไม่มีเครื่อง
+                    <EmptyDeviceState onDeviceAdded={refreshDeviceList} />
+                ) : (
+                    // แสดงรายงานเมื่อโหลดเสร็จแล้วและมีเครื่อง
+                    <div className="report-container">
+                        <div className="report-header">
+                            <h1>รายงานและสถิติ</h1>
+                            <div className="report-actions">
+                                <button 
+                                    className="export-btn"
+                                    onClick={exportToPDF}
+                                >
+                                    <Download size={20} />
+                                    ส่งออกรายงาน
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="report-chart">
-                        <div className="chart-card">
-                            <Line data={chartData} options={chartOptions} />
+                        <div className="report-grid">
+                            <div className="report-card summary-card">
+                                <div className="summary-header">
+                                    <BarChart className="summary-icon" />
+                                    <h2>สรุปภาพรวม</h2>
+                                </div>
+                                <div className="summary-stats">
+                                    <div className="stat-item">
+                                        <span className="stat-label">ค่าฝุ่นเฉลี่ย</span>
+                                        <span className="stat-value">{weeklyData.average}</span>
+                                        <span className="stat-unit">µg/m³</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">ชั่วโมงการทำงาน</span>
+                                        <span className="stat-value">168</span>
+                                        <span className="stat-unit">ชั่วโมง</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">ค่าสูงสุด</span>
+                                        <span className="stat-value">
+                                            {Math.max(...weeklyData.values).toFixed(1)}
+                                        </span>
+                                        <span className="stat-unit">µg/m³</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">ค่าต่ำสุด</span>
+                                        <span className="stat-value">
+                                            {Math.min(...weeklyData.values).toFixed(1)}
+                                        </span>
+                                        <span className="stat-unit">µg/m³</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="report-chart">
+                            <div className="chart-card">
+                                <Line data={chartData} options={chartOptions} />
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

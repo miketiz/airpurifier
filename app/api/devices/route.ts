@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route"; // ปรับ path ให้ถูกต้อง
@@ -16,6 +16,13 @@ export async function GET(req: NextRequest) {
         console.log("API /devices/get_device response:", data);
         return NextResponse.json({ success: true, data: data.data }); // ส่ง data.data กลับ
     } catch (err) {
+        // แก้ไขการ type casting จาก any เป็น AxiosError
+        const axiosError = err as AxiosError;
+        // ถ้า backend ตอบ 404 ให้ส่ง data: [] แทน
+        if (axiosError.response && axiosError.response.status === 404) {
+            return NextResponse.json({ success: true, data: [] });
+        }
+        console.error("API error", err);
         return NextResponse.json({ success: false, message: "API error" }, { status: 500 });
     }
 }
@@ -43,7 +50,8 @@ export async function PATCH(req: NextRequest) {
         });
         return NextResponse.json({ success: true, data: res.data });
     } catch (err) {
-        console.error("API error", err); // เพิ่ม log error
+        // แก้ไขการจัดการ error โดยไม่ใช้ any type
+        console.error("API error", err); 
         return NextResponse.json({ success: false, message: "API error" }, { status: 500 });
     }
 }
